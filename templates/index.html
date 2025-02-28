@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Crawler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Crawler</h1>
+        <input type="text" id="url" placeholder="Enter website URL">
+        <button onclick="scan()">Scan</button>
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        function scan() {
+            const url = document.getElementById('url').value;
+            if (!url) {
+                alert("Please enter a URL");
+                return;
+            }
+
+            fetch('/scan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `url=${encodeURIComponent(url)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('results').innerHTML = `<p style="color: red;">${data.error}</p>`;
+                } else {
+                    let findingsHtml = '<h2>Scan Results:</h2>';
+                    data.findings.forEach((finding, index) => {
+                        findingsHtml += `
+                            <p><strong>${index + 1}. ${finding[0]}</strong> (${finding[1]})</p>
+                            <p>Details: ${finding[2]}</p>
+                            <hr>
+                        `;
+                    });
+                    document.getElementById('results').innerHTML = findingsHtml;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
